@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VisionAI - Live Detection</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #050816;
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* =========================
+           NAVBAR
+        ========================= */
+
+        .navbar {
+            height: 75px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 5%;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+            background: #070b1b;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #00e5ff;
+            font-size: 30px;
+        }
+
+        .back-btn {
+            color: #aeb5c8;
+            text-decoration: none;
+
+            padding: 10px 18px;
+
+            border: 1px solid #283149;
+
+            border-radius: 7px;
+
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            color: #00e5ff;
+            border-color: #00e5ff;
+        }
+
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .main {
+            padding: 35px 5%;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading h1 {
+            font-size: 34px;
+            margin-bottom: 8px;
+        }
+
+        .page-heading p {
+            color: #8992aa;
+        }
+
+
+        /* =========================
+           DETECTION LAYOUT
+        ========================= */
+
+        .detection-container {
+            display: grid;
+
+            grid-template-columns: 1fr 330px;
+
+            gap: 25px;
+        }
+
+
+        /* =========================
+           CAMERA
+        ========================= */
+
+        .camera-section {
+            background: #0b1022;
+
+            border: 1px solid #202a42;
+
+            border-radius: 14px;
+
+            padding: 20px;
+
+            min-height: 500px;
+        }
+
+        .camera-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 15px;
+        }
+
+        .camera-header h2 {
+            font-size: 18px;
+        }
+
+        .live-status {
+            color: #00e5ff;
+
+            font-size: 12px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+
+            background: #00e5ff;
+
+            border-radius: 50%;
+
+            box-shadow: 0 0 10px #00e5ff;
+        }
+
+
+        /* Camera placeholder */
+
+        .camera-screen {
+            height: 410px;
+
+            border-radius: 10px;
+
+            border: 1px solid #26304a;
+
+            background:
+                linear-gradient(
+                    rgba(0, 229, 255, 0.025) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(0, 229, 255, 0.025) 1px,
+                    transparent 1px
+                );
+
+            background-size: 30px 30px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            position: relative;
+
+            overflow: hidden;
+        }
+
+        .camera-message {
+            text-align: center;
+
+            color: #707991;
+        }
+
+        .camera-icon {
+            font-size: 55px;
+
+            color: #00e5ff;
+
+            margin-bottom: 15px;
+        }
+
+        .camera-message h3 {
+            color: #cbd1df;
+
+            margin-bottom: 8px;
+        }
+
+        .camera-message p {
+            font-size: 13px;
+        }
+
+
+        /* Scan corners */
+
+        .scan-corner {
+            position: absolute;
+
+            width: 35px;
+            height: 35px;
+
+            border-color: #00e5ff;
+
+            border-style: solid;
+        }
+
+        .corner-1 {
+            top: 15px;
+            left: 15px;
+
+            border-width: 3px 0 0 3px;
+        }
+
+        .corner-2 {
+            top: 15px;
+            right: 15px;
+
+            border-width: 3px 3px 0 0;
+        }
+
+        .corner-3 {
+            bottom: 15px;
+            left: 15px;
+
+            border-width: 0 0 3px 3px;
+        }
+
+        .corner-4 {
+            bottom: 15px;
+            right: 15px;
+
+            border-width: 0 3px 3px 0;
+        }
+
+
+        /* =========================
+           CONTROL BUTTONS
+        ========================= */
+
+        .controls {
+            display: flex;
+
+            gap: 12px;
+
+            margin-top: 18px;
+        }
+
+        .control-btn {
+            padding: 12px 20px;
+
+            border-radius: 7px;
+
+            border: none;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+            font-weight: bold;
+        }
+
+        .start {
+            background: #00e5ff;
+
+            color: #031017;
+        }
+
+        .stop {
+            background: #171d31;
+
+            color: #b7bfd1;
+
+            border: 1px solid #2b354d;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+        }
+
+
+        /* =========================
+           RIGHT PANEL
+        ========================= */
+
+        .side-panel {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 18px;
+        }
+
+        .panel {
+            background: #0b1022;
+
+            border: 1px solid #202a42;
+
+            border-radius: 14px;
+
+            padding: 22px;
+        }
+
+        .panel-title {
+            color: #8992aa;
+
+            font-size: 12px;
+
+            letter-spacing: 1.5px;
+
+            margin-bottom: 18px;
+        }
+
+
+        /* Status */
+
+        .status-row {
+            display: flex;
+
+            justify-content: space-between;
+
+            padding: 12px 0;
+
+            border-bottom: 1px solid #1d263b;
+        }
+
+        .status-row:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: #8992aa;
+        }
+
+        .status-value {
+            color: #00e5ff;
+
+            font-weight: bold;
+        }
+
+
+        /* Stats */
+
+        .stats {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: #10162b;
+
+            border: 1px solid #202a42;
+
+            border-radius: 9px;
+
+            padding: 15px;
+
+            text-align: center;
+        }
+
+        .stat-number {
+            color: #00e5ff;
+
+            font-size: 25px;
+
+            font-weight: bold;
+
+            margin-bottom: 5px;
+        }
+
+        .stat-name {
+            color: #737c94;
+
+            font-size: 11px;
+        }
+
+
+        /* Object list */
+
+        .object-list {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+        }
+
+        .object-item {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 11px 12px;
+
+            background: #10162b;
+
+            border-radius: 7px;
+
+            border: 1px solid #1d2740;
+        }
+
+        .object-name {
+            color: #dce1ec;
+
+            font-size: 13px;
+        }
+
+        .confidence {
+            color: #00e5ff;
+
+            font-size: 12px;
+
+            font-weight: bold;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            text-align: center;
+
+            color: #596279;
+
+            font-size: 12px;
+
+            padding: 30px;
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 900px) {
+
+            .detection-container {
+                grid-template-columns: 1fr;
+            }
+
+            .side-panel {
+                display: grid;
+
+                grid-template-columns: 1fr 1fr;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .side-panel {
+                display: flex;
+            }
+
+            .camera-screen {
+                height: 300px;
+            }
+
+            .page-heading h1 {
+                font-size: 28px;
+            }
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================
+         NAVBAR
+    ========================== -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            <span>◉</span> VisionAI
+        </div>
+
+        <a href="index.html" class="back-btn">
+            ← Back to Home
+        </a>
+
+    </nav>
+
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main class="main">
+
+
+        <div class="page-heading">
+
+            <h1>
+                Live Object Detection
+            </h1>
+
+            <p>
+                Real-time intelligent object detection using YOLO and OpenCV.
+            </p>
+
+        </div>
+
+
+
+        <div class="detection-container">
+
+
+            <!-- =========================
+                 CAMERA SECTION
+            ========================== -->
+
+            <section class="camera-section">
+
+                <div class="camera-header">
+
+                    <h2>
+                        Camera Feed
+                    </h2>
+
+                    <div class="live-status">
+
+                        <div class="live-dot"></div>
+
+                        SYSTEM READY
+
+                    </div>
+
+                </div>
+
+
+                <div class="camera-screen">
+
+
+                    <div class="scan-corner corner-1"></div>
+                    <div class="scan-corner corner-2"></div>
+                    <div class="scan-corner corner-3"></div>
+                    <div class="scan-corner corner-4"></div>
+
+
+                   <img
+    src=""
+    id="videoFeed"
+    style="
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 10px;
+    "
+    >
+
+
+                </div>
+
+
+                <div class="controls">
+
+                    <button
+                        class="control-btn start"
+                        onclick="startCamera()">
+
+                        ▶ Start Detection
+
+                    </button>
+
+                    <button class="control-btn" onclick="captureScreenshot()">
+    📸 Capture
+</button>
+
+                    <button
+                        class="control-btn stop"
+                        onclick="stopCamera()">
+
+                        ■ Stop Detection
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =========================
+                 SIDE PANEL
+            ========================== -->
+
+            <aside class="side-panel">
+
+
+                <!-- System Status -->
+
+                <div class="panel">
+
+                    <div class="panel-title">
+                        SYSTEM STATUS
+                    </div>
+
+
+                    <div class="status-row">
+
+                        <span class="status-label">
+                            AI Model
+                        </span>
+
+                        <span class="status-value">
+                            YOLO
+                        </span>
+
+                    </div>
+
+
+                    <div class="status-row">
+
+                        <span class="status-label">
+                            Camera
+                        </span>
+
+                        <span
+                            class="status-value"
+                            id="cameraStatus">
+
+                            OFF
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="status-row">
+
+                        <span class="status-label">
+                            Processing
+                        </span>
+
+                        <span class="status-value">
+                            Ready
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- Statistics -->
+
+                <div class="panel">
+
+                    <div class="panel-title">
+                        LIVE STATISTICS
+                    </div>
+
+
+                    <div class="stats">
+
+                        <div class="stat-box">
+
+                            <div
+                                class="stat-number"
+                                id="objectCount">
+
+                                0
+
+                            </div>
+
+                            <div class="stat-name">
+                                OBJECTS
+                            </div>
+
+                        </div>
+
+
+                        <div class="stat-box">
+
+                            <div
+                                class="stat-number"
+                                id="fps">
+
+                                0
+
+                            </div>
+
+                            <div class="stat-name">
+                                FPS
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- Detected Objects -->
+
+                <div class="panel">
+
+                    <div class="panel-title">
+                        DETECTED OBJECTS
+                    </div>
+
+
+                    <div class="object-list" id="objectList">
+
+
+                        <div class="object-item">
+
+                            <span class="object-name">
+                                Waiting for detection...
+                            </span>
+
+                            <span class="confidence">
+                                --
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+<!-- Detection History -->
+
+<div class="panel">
+
+    <div class="panel-title">
+        DETECTION HISTORY
+    </div>
+
+<button class="control-btn stop" onclick="clearHistory()">
+    🗑 Clear History
+</button>
+
+    <div class="object-list" id="historyList">
+
+        <div class="object-item">
+
+            <span class="object-name">
+                No history yet
+            </span>
+
+            <span class="confidence">
+                --
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+            </aside>
+
+
+        </div>
+
+    </main>
+
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+        VisionAI • Real-Time Intelligent Object Detection System
+
+    </footer>
+
+
+
+    <!-- =========================
+         TEMPORARY JAVASCRIPT
+    ========================== -->
+
+     <script>
+
+    function startCamera() {
+
+        const video = document.getElementById("videoFeed");
+        const status = document.getElementById("cameraStatus");
+
+        // Start/reload camera stream
+        video.src = "/video_feed?" + new Date().getTime();
+
+        status.innerText = "ON";
+        status.style.color = "#00ff88";
+    }
+
+
+      function stopCamera() {
+
+    const video = document.getElementById("videoFeed");
+    const status = document.getElementById("cameraStatus");
+
+    video.src = "";
+
+    status.innerText = "OFF";
+    status.style.color = "#00e5ff";
+}
+
+function captureScreenshot() {
+
+    const video = document.getElementById("videoFeed");
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = video.naturalWidth;
+    canvas.height = video.naturalHeight;
+
+    const context = canvas.getContext("2d");
+
+    context.drawImage(video, 0, 0);
+
+    const link = document.createElement("a");
+
+    link.download = "detection_" + new Date().getTime() + ".jpg";
+
+    link.href = canvas.toDataURL("image/jpeg");
+
+    link.click();
+}
+
+
+async function updateStats() {
+    try {
+        const response = await fetch("/stats");
+        const data = await response.json();
+
+        document.getElementById("objectCount").innerText = data.count;
+        document.getElementById("fps").innerText = data.fps;
+
+        const objectList = document.getElementById("objectList");
+
+        if (data.objects.length === 0) {
+            objectList.innerHTML = `
+                <div class="object-item">
+                    <span class="object-name">No object detected</span>
+                    <span class="confidence">--</span>
+                </div>
+            `;
+            return;
+        }
+
+        objectList.innerHTML = data.objects.map(obj => `
+            <div class="object-item">
+                <span class="object-name">${obj.name}</span>
+                <span class="confidence">${obj.confidence}%</span>
+            </div>
+        `).join("");
+
+    } catch (error) {
+        console.log("Stats error:", error);
+    }
+}
+async function updateHistory() {
+    try {
+        const response = await fetch("/history");
+        const data = await response.json();
+
+        const historyList = document.getElementById("historyList");
+
+        if (data.length === 0) {
+            historyList.innerHTML = `
+                <div class="object-item">
+                    <span class="object-name">No history yet</span>
+                    <span class="confidence">--</span>
+                </div>
+            `;
+            return;
+        }
+
+        historyList.innerHTML = data.slice(-10).reverse().map(item => `
+            <div class="object-item">
+                <span class="object-name">${item.time} — ${item.name}</span>
+                <span class="confidence">${item.confidence}%</span>
+            </div>
+        `).join("");
+
+    } catch (error) {
+        console.log("History error:", error);
+    }
+}
+async function clearHistory() {
+    try {
+        await fetch("/clear_history", {
+            method: "POST"
+        });
+
+        updateHistory();
+
+    } catch (error) {
+        console.log("Clear history error:", error);
+    }
+}
+setInterval(updateHistory, 1000);
+updateHistory();
+
+setInterval(updateStats, 500);
+updateStats();
+
+</script>
+
+
+</body>
+
+</html>
