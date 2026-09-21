@@ -7,7 +7,7 @@ import time
 app = Flask(__name__)
 
 # Load YOLO model
-model = YOLO("yolov8s.pt")
+model = YOLO("yolov8n.pt")
 
 
 prev_time = 0
